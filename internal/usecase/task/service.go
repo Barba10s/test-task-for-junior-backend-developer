@@ -106,6 +106,12 @@ func validateCreateInput(input CreateInput) (CreateInput, error) {
 		return CreateInput{}, fmt.Errorf("%w: invalid status", ErrInvalidInput)
 	}
 
+	if input.Frequency != nil {
+		if err := input.Frequency.Validate(); err != nil {
+			return CreateInput{}, fmt.Errorf("%w: invalid frequency: %v", ErrInvalidInput, err)
+		}
+	}
+
 	return input, nil
 }
 
@@ -119,6 +125,12 @@ func validateUpdateInput(input UpdateInput) (UpdateInput, error) {
 
 	if !input.Status.Valid() {
 		return UpdateInput{}, fmt.Errorf("%w: invalid status", ErrInvalidInput)
+	}
+
+	if input.Frequency != nil {
+		if err := input.Frequency.Validate(); err != nil {
+			return UpdateInput{}, fmt.Errorf("%w: invalid frequency: %v", ErrInvalidInput, err)
+		}
 	}
 
 	return input, nil
