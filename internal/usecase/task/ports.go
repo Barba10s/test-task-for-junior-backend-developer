@@ -4,7 +4,7 @@ import (
 	"context"
 
 	taskdomain "example.com/taskservice/internal/domain/task"
-	"example.com/taskservice/internal/domain/task/frequency"
+	taskfrequency "example.com/taskservice/internal/domain/task/frequency"
 )
 
 type Repository interface {
@@ -27,12 +27,12 @@ type CreateInput struct {
 	Title       string
 	Description string
 	Status      taskdomain.Status
-	Frequency   *frequency.Frequency
+	Frequency   *taskfrequency.Frequency
 }
 
 type UpdateInput struct {
 	Title       string
 	Description string
 	Status      taskdomain.Status
-	Frequency   *frequency.Frequency
+	Frequency   *taskfrequency.Frequency
 }
