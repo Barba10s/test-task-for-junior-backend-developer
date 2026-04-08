@@ -3,7 +3,7 @@ package task
 import (
 	"time"
 
-	"example.com/taskservice/internal/domain/task/frequency"
+	taskfrequency "example.com/taskservice/internal/domain/task/frequency"
 )
 
 type Status string
@@ -15,13 +15,13 @@ const (
 )
 
 type Task struct {
-	ID          int64                `json:"id"`
-	Title       string               `json:"title"`
-	Description string               `json:"description"`
-	Status      Status               `json:"status"`
-	Frequency   *frequency.Frequency `json:"frequency,omitempty"`
-	CreatedAt   time.Time            `json:"created_at"`
-	UpdatedAt   time.Time            `json:"updated_at"`
+	ID          int64                    `json:"id"`
+	Title       string                   `json:"title"`
+	Description string                   `json:"description"`
+	Status      Status                   `json:"status"`
+	Frequency   *taskfrequency.Frequency `json:"frequency,omitempty"`
+	CreatedAt   time.Time                `json:"created_at"`
+	UpdatedAt   time.Time                `json:"updated_at"`
 }
 
 func (s Status) Valid() bool {
