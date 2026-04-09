@@ -2,6 +2,7 @@ package frequency
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -18,13 +19,7 @@ func (s *SpecificStrategy) IsValid(date time.Time) bool {
 
 	day := date.Day()
 
-	for _, d := range s.Dates {
-		if d == day {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(s.Dates, day)
 }
 
 func (s *SpecificStrategy) NextOccurrence(from time.Time) time.Time {

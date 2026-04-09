@@ -1,6 +1,7 @@
 package frequency
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -10,6 +11,7 @@ type Frequency struct {
 	DayOfMonth   *int          `json:"day_of_month,omitempty"`
 	Dates        []int         `json:"dates,omitempty"`
 	Parity       *ParityType   `json:"parity,omitempty"`
+	TimeOfDay    *string       `json:"time_of_day,omitempty"`
 }
 
 func (f *Frequency) Validate() error {
@@ -17,37 +19,18 @@ func (f *Frequency) Validate() error {
 		return nil
 	}
 
-	switch f.Type {
-	case FrequencyDaily:
-		if f.IntervalDays == nil || *f.IntervalDays < 1 {
-			return ErrInvalidFrequency
-		}
-
-	case FrequencyMonthly:
-		if f.DayOfMonth == nil || *f.DayOfMonth < 1 || *f.DayOfMonth > 30 {
-			return ErrInvalidFrequency
-		}
-
-	case FrequencySpecific:
-		if len(f.Dates) == 0 {
-			return ErrInvalidFrequency
-		}
-		for _, d := range f.Dates {
-			if d < 1 || d > 31 {
-				return ErrInvalidFrequency
-			}
-		}
-
-	case FrequencyParity:
-		if f.Parity == nil || (*f.Parity != ParityEven && *f.Parity != ParityOdd) {
-			return ErrInvalidFrequency
-		}
-
-	default:
-		return ErrInvalidFrequency
+	if err := f.ValidateTime(); err != nil {
+		return err
 	}
 
-	return nil
+	strategy, err := f.ToStrategy()
+	if err != nil {
+		return err
+	}
+	if strategy == nil {
+		return ErrInvalidFrequency
+	}
+	return strategy.Validate()
 }
 
 func (f *Frequency) ToStrategy() (FrequencyStrategy, error) {
@@ -106,4 +89,46 @@ func (f *Frequency) Description() string {
 	}
 
 	return strategy.Description()
+}
+
+func isValidTimeFormat(t string) bool {
+	if t == "" {
+		return true
+	}
+	if len(t) != 5 || t[2] != ':' {
+		return false
+	}
+	for i, c := range t {
+		if i == 2 {
+			continue
+		}
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidTimeValue(t string) bool {
+	hours := int(t[0]-'0')*10 + int(t[1]-'0')
+	minutes := int(t[3]-'0')*10 + int(t[4]-'0')
+	return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59
+}
+
+func (f *Frequency) ValidateTime() error {
+	if f.TimeOfDay == nil {
+		return nil
+	}
+
+	t := *f.TimeOfDay
+
+	if !isValidTimeFormat(t) {
+		return fmt.Errorf("time_of_day must be in HH:MM format (got '%s')", t)
+	}
+
+	if !isValidTimeValue(t) {
+		return fmt.Errorf("time_of_day must be 00-23:00-59 (got '%s')", t)
+	}
+
+	return nil
 }

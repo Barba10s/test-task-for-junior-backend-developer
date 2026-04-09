@@ -149,6 +149,8 @@ func writeUsecaseError(w http.ResponseWriter, err error) {
 		writeError(w, http.StatusNotFound, err)
 	case errors.Is(err, taskusecase.ErrInvalidInput):
 		writeError(w, http.StatusBadRequest, err)
+	case errors.Is(err, taskusecase.ErrTimeConflict):
+		writeError(w, http.StatusConflict, err)
 	default:
 		writeError(w, http.StatusInternalServerError, err)
 	}

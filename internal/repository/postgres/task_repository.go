@@ -147,6 +147,25 @@ func (r *Repository) List(ctx context.Context) ([]taskdomain.Task, error) {
 	return tasks, nil
 }
 
+func (r *Repository) HasSameTimeSlot(ctx context.Context, excludeID int64, timeOfDay string) (bool, error) {
+	if timeOfDay == "" {
+		return false, nil
+	}
+
+	const query = `
+        SELECT EXISTS(
+            SELECT 1 FROM tasks
+            WHERE id != $1
+            AND frequency IS NOT NULL
+            AND frequency->>'time_of_day' = $2
+        )
+    `
+
+	var exists bool
+	err := r.pool.QueryRow(ctx, query, excludeID, timeOfDay).Scan(&exists)
+	return exists, err
+}
+
 type taskScanner interface {
 	Scan(dest ...any) error
 }
