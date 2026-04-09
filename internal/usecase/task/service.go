@@ -7,6 +7,7 @@ import (
 	"time"
 
 	taskdomain "example.com/taskservice/internal/domain/task"
+	taskfrequency "example.com/taskservice/internal/domain/task/frequency"
 )
 
 type Service struct {
@@ -24,6 +25,10 @@ func NewService(repo Repository) *Service {
 func (s *Service) Create(ctx context.Context, input CreateInput) (*taskdomain.Task, error) {
 	normalized, err := validateCreateInput(input)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.checkTimeConflict(ctx, 0, normalized.Frequency); err != nil {
 		return nil, err
 	}
 
@@ -63,6 +68,10 @@ func (s *Service) Update(ctx context.Context, id int64, input UpdateInput) (*tas
 		return nil, err
 	}
 
+	if err := s.checkTimeConflict(ctx, id, normalized.Frequency); err != nil {
+		return nil, err
+	}
+
 	model := &taskdomain.Task{
 		ID:          id,
 		Title:       normalized.Title,
@@ -90,6 +99,21 @@ func (s *Service) Delete(ctx context.Context, id int64) error {
 
 func (s *Service) List(ctx context.Context) ([]taskdomain.Task, error) {
 	return s.repo.List(ctx)
+}
+
+func (s *Service) checkTimeConflict(ctx context.Context, excludeID int64, freq *taskfrequency.Frequency) error {
+	if freq == nil || freq.TimeOfDay == nil {
+		return nil
+	}
+
+	hasConflict, err := s.repo.HasSameTimeSlot(ctx, excludeID, *freq.TimeOfDay)
+	if err != nil {
+		return fmt.Errorf("failed to check time conflicts: %w", err)
+	}
+	if hasConflict {
+		return fmt.Errorf("%w: task with time %s already exists", ErrTimeConflict, *freq.TimeOfDay)
+	}
+	return nil
 }
 
 func validateCreateInput(input CreateInput) (CreateInput, error) {
