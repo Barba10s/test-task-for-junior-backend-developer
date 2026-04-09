@@ -1,6 +1,7 @@
 package frequency
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -57,7 +58,7 @@ func (s *ParityStrategy) Description() string {
 
 func (s *ParityStrategy) Validate() error {
 	if s.Parity != ParityEven && s.Parity != ParityOdd {
-		return ErrInvalidFrequency
+		return fmt.Errorf("parity must be 'even' or 'odd'")
 	}
 	return nil
 }
