@@ -38,7 +38,7 @@ func (s *MonthlyStrategy) Description() string {
 
 func (s *MonthlyStrategy) Validate() error {
 	if s.DayOfMonth < 1 || s.DayOfMonth > 30 {
-		return ErrInvalidFrequency
+		return fmt.Errorf("day_of_month must be between 1 and 30")
 	}
 	return nil
 }

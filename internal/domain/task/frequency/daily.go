@@ -47,7 +47,7 @@ func pluralizeDays(n int) string {
 
 func (s *DailyStrategy) Validate() error {
 	if s.IntervalDays < 1 {
-		return ErrInvalidFrequency
+		return fmt.Errorf("interval_days must be >= 1")
 	}
 	return nil
 }

@@ -75,14 +75,21 @@ func (s *SpecificStrategy) Description() string {
 
 func (s *SpecificStrategy) Validate() error {
 	if len(s.Dates) == 0 {
-		return ErrInvalidFrequency
+		return fmt.Errorf("dates array cannot be empty")
+	}
+	if len(s.Dates) > 31 {
+		return fmt.Errorf("maximum 31 dates allowed (got %d)", len(s.Dates))
 	}
 
+	seen := make(map[int]bool)
 	for _, day := range s.Dates {
 		if day < 1 || day > 31 {
-			return ErrInvalidFrequency
+			return fmt.Errorf("each date must be between 1 and 31 (got %d)", day)
 		}
+		if seen[day] {
+			return fmt.Errorf("duplicate date: %d", day)
+		}
+		seen[day] = true
 	}
-
 	return nil
 }
