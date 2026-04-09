@@ -2,8 +2,11 @@ package frequency
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 )
+
+var timeRegex = regexp.MustCompile(`^([01]\d|2[0-3]):([0-5]\d)$`)
 
 type Frequency struct {
 	Type         FrequencyType `json:"type"`
@@ -95,24 +98,7 @@ func isValidTimeFormat(t string) bool {
 	if t == "" {
 		return true
 	}
-	if len(t) != 5 || t[2] != ':' {
-		return false
-	}
-	for i, c := range t {
-		if i == 2 {
-			continue
-		}
-		if c < '0' || c > '9' {
-			return false
-		}
-	}
-	return true
-}
-
-func isValidTimeValue(t string) bool {
-	hours := int(t[0]-'0')*10 + int(t[1]-'0')
-	minutes := int(t[3]-'0')*10 + int(t[4]-'0')
-	return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59
+	return timeRegex.MatchString(t)
 }
 
 func (f *Frequency) ValidateTime() error {
@@ -123,11 +109,7 @@ func (f *Frequency) ValidateTime() error {
 	t := *f.TimeOfDay
 
 	if !isValidTimeFormat(t) {
-		return fmt.Errorf("time_of_day must be in HH:MM format (got '%s')", t)
-	}
-
-	if !isValidTimeValue(t) {
-		return fmt.Errorf("time_of_day must be 00-23:00-59 (got '%s')", t)
+		return fmt.Errorf("time_of_day must be in HH:MM format (00-23:00-59), got '%s'", t)
 	}
 
 	return nil
