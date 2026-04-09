@@ -1,6 +1,7 @@
 package frequency
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -10,11 +11,16 @@ type Frequency struct {
 	DayOfMonth   *int          `json:"day_of_month,omitempty"`
 	Dates        []int         `json:"dates,omitempty"`
 	Parity       *ParityType   `json:"parity,omitempty"`
+	TimeOfDay    *string       `json:"time_of_day,omitempty"`
 }
 
 func (f *Frequency) Validate() error {
 	if f == nil {
 		return nil
+	}
+
+	if err := f.ValidateTime(); err != nil {
+		return err
 	}
 
 	switch f.Type {
@@ -106,4 +112,19 @@ func (f *Frequency) Description() string {
 	}
 
 	return strategy.Description()
+}
+
+func isValidTimeFormat(t string) bool {
+	if t == "" {
+		return true
+	}
+	_, err := time.Parse("15:04", t)
+	return err == nil
+}
+
+func (f *Frequency) ValidateTime() error {
+	if f.TimeOfDay != nil && !isValidTimeFormat(*f.TimeOfDay) {
+		return fmt.Errorf("time_of_day must be in HH:MM format (got '%s')", *f.TimeOfDay)
+	}
+	return nil
 }
